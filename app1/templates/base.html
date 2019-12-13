@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/static/css/commons.css" />
+     <script src="/static/js/jquery-3.1.1.js"></script>
+</head>
+<body>
+
+
+
+<div class="head-box">
+    <div class="head-content">
+
+        <a href="#" class="logo"></a>
+
+        <div class="action-menu">
+
+				    <a href="#" class="tb active">全部</a>
+					<a href="#" class="tb">42区</a>
+					<a href="#" class="tb">段子</a>
+					<a href="#" class="tb">图片</a>
+					<a href="#" class="tb">挨踢1024</a>
+					<a href="#" class="tb">你问我答</a>
+        </div>
+
+
+        <div class="key-search">
+
+                <form action="/" method="post">
+                    <input type="text" class="search-txt" autocomplete="off">
+
+                    <a href="#" class="i" >
+                        <span class="ico"></span>
+                    </a>
+                </form>
+
+		</div>
+
+        <div class="action-nav">
+				<a href="javascript:void(0);" class="login-btn-a" id="reg_link_a">注册</a>
+                <a href="javascript:void(0);" class="login-btn-a" id="login_link_a">登录</a>
+		</div>
+
+        <div id="accountDialog" class="account-dialog hide clearfix">
+        <div id="model_login" class="login left">
+            <div class="header">登陆</div>
+            <div class="content">
+                <div style="padding: 0 70px">
+                    <div class="tips">
+                        <span>用户名登陆</span>
+                        <span style="padding: 0 5px;">|</span>
+                        <span>邮箱登陆</span>
+                    </div>
+                    <div id="login_error_summary" class="error-msg">
+
+                    </div>
+                    <div class="inp">
+                        <input name="user" type="text" placeholder="请输入用户名或邮箱" />
+                    </div>
+                    <div class="inp">
+                        <input name="pwd" type="password" placeholder="请输入密码" />
+                    </div>
+                    <div class="inp clearfix">
+                        <input name="code" class="check-code" type="text" placeholder="请输入验证码" />
+                        <span>
+                            <img class="check-img" src="/check_code/" alt="验证码" onclick="ChangeCode(this);">
+                        </span>
+
+                    </div>
+                    <div class="extra">
+                        <input type="checkbox" name="autoLogin" checked="checked" /> <span>一个月内自动登录</span>
+                        <a class="right" href="javascript:void(0);">忘记密码？</a>
+                    </div>
+                    <div class="inp">
+                        <div class="submit" onclick="SubmitLogin(this);">
+                            <span>登陆</span>
+                            <span class="hide">
+                                <img src="/static/images/loader.gif" style="height: 16px;width: 16px">
+                                <span>正在登陆</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <script>
+                    function ChangeCode(ths) {
+                        ths.src += '?';
+                    }
+                </script>
+            </div>
+        </div>
+        <div id="model_register" class="register left">
+            <div class="header">
+                <span>注册</span>
+                <div class="dialog-close" onclick="CloseDialog('#accountDialog');">X</div>
+            </div>
+            <div class="content">
+                <div style="padding: 0 70px">
+                    <div class="tips">
+                        <span>输入注册信息</span>
+                    </div>
+                    <div id="register_error_summary" class="error-msg">
+
+                    </div>
+                    <div class="inp">
+                        <input name="username" type="text" placeholder="请输入用户名" />
+
+                    </div>
+                    <div class="inp">
+                        <input name="email" id="email" type="text" placeholder="请输入邮箱" />
+                    </div>
+                    <div class="inp">
+                        <input name="email_code" class="email-code" type="text" placeholder="请输入邮箱验证码" />
+                        <a id="fetch_code" class="fetch-code" href="javascript:void(0);">获取验证码</a>
+                    </div>
+                    <div class="inp">
+                        <input name="password" type="password" placeholder="请输入密码" />
+                    </div>
+                    <div class="inp">
+                        <div class="submit" onclick="SubmitRegister(this);">
+                            <span>注册</span>
+                            <span class="hide">
+                                <img src="/static/images/loader.gif" style="height: 16px;width: 16px">
+                                <span>正在注册</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+</div>
+
+<script>
+    $(function () {
+
+
+            BindLoginRegisterDialog();
+            BindSendMsg();
+
+
+        });
+
+
+           function BindSendMsg(){
+            $("#fetch_code").click(function(){
+                // 整体错误清空
+                $('#register_error_summary').empty();
+                // 获取邮箱输入的值
+                var email = $('#email').val();
+                if(email.trim().length == 0){
+                    $('#register_error_summary').text('请输入注册邮箱');
+                    return;
+                }
+                // 点击的按钮
+                if($(this).hasClass('sending')){
+                    // 遇到return下面不再继续执行
+                    return;
+                }
+                var ths = $(this);
+                var time = 60;
+
+                $.ajax({
+                    url: "/send_msg/",
+                    type: 'POST',
+                    data: {email: email},
+                    dataType: 'json',
+                    success: function(arg){
+                        // {'status': False, "summary": '整体错误错误', 'error': {}}
+                        if(!arg.status){
+                            $('#register_error_summary').text(arg.summary);
+                        }else{
+                            // 后台已经发送成功
+                            ths.addClass('sending');
+                            //setInterval()按照指定的周期（以毫秒计）来调用函数或计算表达式，隔一定周期调用一次函数.clearInterval()取消由 setInterval() 设置的 timeout。
+                            var interval = setInterval(function(){
+                                ths.text("已发送(" + time + ")");
+                                time -= 1;
+                                if(time <= 0){
+                                    clearInterval(interval);
+                                    ths.removeClass('sending');
+                                    ths.text("获取验证码");
+                                }
+                            }, 1000);
+                        }
+                    }
+                });
+
+            });
+        }
+
+
+       function BindLoginRegisterDialog(){
+
+            $('#reg_link_a,#login_link_a').click(function(){
+                $('#accountDialog').removeClass('hide');
+                $('.shadow').removeClass('hide');
+            });
+        }
+
+        function CloseDialog(dialog){
+            $(dialog).addClass('hide');
+            $('.shadow').addClass('hide');
+        }
+
+
+        /*
+        点击注册按钮
+        */
+        function SubmitRegister(ths){
+            $('#register_error_summary').empty();
+            $('#model_register .inp .error').remove();
+
+            $(ths).children(':eq(0)').addClass('hide');
+            $(ths).addClass('not-allow').children(':eq(1)').removeClass('hide');
+
+            var post_dict = {};
+            $('#model_register input').each(function(){
+                post_dict[$(this).attr("name")] = $(this).val();
+            });
+
+            $.ajax({
+                url: '/register/',
+                type: 'POST',
+                data: post_dict,
+                dataType: 'json',
+                success: function(arg){
+                    if(arg.status){
+                        window.location.href = '/index';
+                    }else{
+                        $.each(arg.message, function(k,v){
+                            //<span class="error">s</span>
+                            var tag = document.createElement('span');
+                            tag.className = 'error';
+                            tag.innerText = v[0]['message'];
+                            $('#model_register input[name="'+ k +'"]').after(tag);
+                        })
+                    }
+                }
+            });
+
+            $(ths).removeClass('not-allow').children(':eq(1)').addClass('hide');
+            $(ths).children(':eq(0)').removeClass('hide');
+        }
+
+
+             /*
+        点击登陆按钮
+        */
+        function SubmitLogin(ths){
+            $(ths).children(':eq(0)').addClass('hide');
+            $(ths).addClass('not-allow').children(':eq(1)').removeClass('hide');
+            // 发送Ajax请求
+            //完成之后
+            $('#model_login .inp .error').remove();
+
+            var post_dict = {};
+            $('#model_login input').each(function(){
+                post_dict[$(this).attr("name")] = $(this).val();
+            });
+
+            $.ajax({
+                url: '/login/',
+                type: 'POST',
+                data: post_dict,
+                dataType: 'json',
+                success: function(arg){
+                    if(arg.status){
+                        window.location.href = '/index';
+                    }else{
+                        $.each(arg.message, function(k,v){
+
+                            //<span class="error">s</span>
+                            var tag = document.createElement('span');
+                            tag.className = 'error';
+                            tag.innerText = v[0]['message'];
+                            $('#model_login input[name="'+ k +'"]').after(tag);
+                        })
+                    }
+                }
+            });
+
+            $(ths).removeClass('not-allow').children(':eq(1)').addClass('hide');
+            $(ths).children(':eq(0)').removeClass('hide');
+        }
+
+
+</script>
+
+</body>
+
+</html>
